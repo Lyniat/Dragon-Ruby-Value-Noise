@@ -19,7 +19,7 @@ def init args
     y = 0
     while y < SIZE
       n = noise.get(x * SCALE, y * SCALE)
-      n = (((n + 1) / 2) * 255).to_i
+      n = (n * 255).floor # result is now between 0 and 1 (forgot that in the commits before)
       args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n + (n << 8) + (n << 16)
       y += 1
     end

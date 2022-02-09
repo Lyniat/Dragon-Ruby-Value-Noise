@@ -1,2 +1,4 @@
 # Dragon-Ruby-Value-Noise
-value noise for dragon ruby
+Probably bad implementation and slow!
+
+![Screenshot](screenshots/sc0.png)

@@ -10,14 +10,20 @@ SCALE = 0.1
 
 def init args
   noise = Noise.new(SEED, 3)
+
   args.pixel_array(:noise).width = SIZE
   args.pixel_array(:noise).height = SIZE
-  (0...SIZE).each do |x|
-    (0...SIZE).each do |y|
+
+  x = 0
+  while x < SIZE
+    y = 0
+    while y < SIZE
       n = noise.get(x * SCALE, y * SCALE)
       n = (((n + 1) / 2) * 255).to_i
-      args.pixel_array(:noise).pixels << 0xFF000000 + n + (n << 8) + (n << 16)
+      args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n + (n << 8) + (n << 16)
+      y += 1
     end
+    x += 1
   end
 end
 

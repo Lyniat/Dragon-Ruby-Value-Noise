@@ -13,12 +13,14 @@ class Noise
   def get(pos_x, pos_y) # fbm
     v = 0
     a = 0.5
-    (0...@octaves).each do |i|
+    i = 0
+    while i < @octaves
       v += a * noise(pos_x, pos_y)
       r_x, r_y = rotate(pos_x * 2, pos_y * 2)
       pos_x = r_x + 100
       pos_y = r_y + 100
       a *= 0.5
+      i += 1
     end
     v
   end
@@ -39,8 +41,8 @@ class Noise
 
     # Smooth Interpolation
     # Cubic Hermine Curve
-    u_x = f_x**2 * (3 - 2 * f_x)
-    u_y = f_y**2 * (3 - 2 * f_y)
+    u_x = f_x * f_x * (3 - 2 * f_x)
+    u_y = f_y * f_y * (3 - 2 * f_y)
 
     # Mix 4 corners percentages
     mix(a, b, u_x) + (c - a) * u_y * (1.0 - u_x) + (d - b) * u_x * u_y
@@ -54,9 +56,9 @@ class Noise
     p3_xz = fract(x * 0.13 * @seed)
     p3_y = fract(y * 0.13)
     d = vec3_dot(p3_xz,p3_y,p3_xz, p3_y + 3.333,p3_xz + 3.333, p3_xz + 3.333)
-    q3_xz = p3_xz + d
-    q3_y = p3_y + d
-    fract((q3_xz + q3_y) * q3_xz)
+    p3_xz += d
+    p3_y += d
+    fract((p3_xz + p3_y) * p3_xz)
   end
 
   def vec3_dot (ax, ay, az, bx ,by, bz)
@@ -64,7 +66,7 @@ class Noise
   end
 
   def fract(num)
-    num - num.to_i
+    num - num.floor
   end
 
   def mix(x, y, a)

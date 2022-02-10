@@ -35,10 +35,10 @@ class Noise
     f_y = fract(y)
 
     # Four corners in 2D of a tile
-    a = hash_2(i_x, i_y)
-    b = hash_2(i_x + 1, i_y)
-    c = hash_2(i_x, i_y + 1)
-    d = hash_2(i_x + 1, i_y + 1)
+    a = hash(i_x, i_y)
+    b = hash(i_x + 1, i_y)
+    c = hash(i_x, i_y + 1)
+    d = hash(i_x + 1, i_y + 1)
 
     # Smooth Interpolation
     # Cubic Hermine Curve
@@ -66,6 +66,7 @@ class Noise
   # based on the Golden Ratio
   # see: https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
   # TODO: might be an issue: https://www.shadertoy.com/view/NssGDf
+  # TODO: needs testing
   def hash_2(x, y)
     xp = x * PHI
     yp = y * PHI

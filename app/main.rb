@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'app/noise.rb'
 
 WIDTH = 1280

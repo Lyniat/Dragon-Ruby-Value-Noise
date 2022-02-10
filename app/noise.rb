@@ -1,9 +1,10 @@
-# https://www.shadertoy.com/view/4dS3Wd
+# see https://www.shadertoy.com/view/4dS3Wd
 
 class Noise
 
-  SIN = 0.479426 #sin(0.5)
-  COS = 0.877582 #cos(0.5)
+  SIN = 0.479426 # sin(0.5) TODO: more accurate number
+  COS = 0.877582 # cos(0.5) TODO: more accurate number
+  PHI = 1.61803398874989484820459
 
   def initialize(seed = 1337, octaves = 3)
     @seed = seed
@@ -34,10 +35,10 @@ class Noise
     f_y = fract(y)
 
     # Four corners in 2D of a tile
-    a = hash(i_x,i_y)
-    b = hash(i_x + 1, i_y)
-    c = hash(i_x, i_y + 1)
-    d = hash(i_x + 1, i_y + 1)
+    a = hash_2(i_x, i_y)
+    b = hash_2(i_x + 1, i_y)
+    c = hash_2(i_x, i_y + 1)
+    d = hash_2(i_x + 1, i_y + 1)
 
     # Smooth Interpolation
     # Cubic Hermine Curve
@@ -55,10 +56,25 @@ class Noise
   def hash(x, y)
     p3_xz = fract(x * 0.13 * @seed)
     p3_y = fract(y * 0.13)
-    d = vec3_dot(p3_xz,p3_y,p3_xz, p3_y + 3.333,p3_xz + 3.333, p3_xz + 3.333)
+    d = vec3_dot(p3_xz, p3_y, p3_xz, p3_y + 3.333, p3_xz + 3.333, p3_xz + 3.333)
     p3_xz += d
     p3_y += d
     fract((p3_xz + p3_y) * p3_xz)
+  end
+
+  # Gold Noise ©2015 dcerisano@standard3d.com
+  # based on the Golden Ratio
+  # see: https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+  # TODO: might be an issue: https://www.shadertoy.com/view/NssGDf
+  def hash_2(x, y)
+    xp = x * PHI
+    yp = y * PHI
+    tan = Math.tan(distance(xp, yp, x ,y) * @seed)
+    fract(tan * x)
+  end
+
+  def distance(x,y,a,b)
+    (x - a) * (x - a) + (y - b) * (y - b) #sqrt not needed I hope :D
   end
 
   def vec3_dot (ax, ay, az, bx ,by, bz)

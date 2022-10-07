@@ -2,8 +2,8 @@
 
 class Noise
 
-  SIN = 0.479425538604203 # sin(0.5) TODO: more accurate number
-  COS = 0.8775825618903728 # cos(0.5) TODO: more accurate number
+  SIN = 0.479425538604203
+  COS = 0.877582561890372
   PHI = 1.61803398874989484820459
 
   def initialize(seed = 1337, octaves = 3)

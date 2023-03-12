@@ -26,8 +26,6 @@ class Noise
     v
   end
 
-  private
-
   def noise(x, y)
     i_x = x.floor
     i_y = y.floor

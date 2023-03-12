@@ -1,4 +1,5 @@
 # DragonRuby Value Noise
-A good (at least in my opinion 😉) implementation of value noise for Dragon Ruby.
+A implementation of value noise for Dragon Ruby.
+The noise function works with standard DR but the example needs DR *Indie* or *Pro*.
 
 ![Screenshot](screenshots/sc0.png)

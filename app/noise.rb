@@ -2,6 +2,14 @@
 
 class Noise
 
+  CELLULAR_RETURN_TYPE_CELL_VALUE = 0
+  CELLULAR_RETURN_TYPE_DISTANCE = 1
+  CELLULAR_RETURN_TYPE_DISTANCE_2 = 2
+  CELLULAR_RETURN_TYPE_DISTANCE_2_ADD = 3
+  CELLULAR_RETURN_TYPE_DISTANCE_2_SUB = 4
+  CELLULAR_RETURN_TYPE_DISTANCE_2_MUL = 5
+  CELLULAR_RETURN_TYPE_DISTANCE_2_DIV = 6
+
   SIN = 0.479425538604203
   COS = 0.877582561890372
 
@@ -176,7 +184,7 @@ class Noise
   # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   # SOFTWARE.
 
-  def get_cellular(pos_x, pos_y)
+  def get_cellular(pos_x, pos_y, return_type = 0)
     xr = pos_x.round
     yr = pos_y.round
 
@@ -224,21 +232,20 @@ class Noise
 
     distance_0 = Math.sqrt(distance_0)
 
-    type = 0
-    case type
-    when 0
+    case return_type
+    when CELLULAR_RETURN_TYPE_CELL_VALUE
       return closest_hash * (1 / 2147483648.0)
-    when 1
+    when CELLULAR_RETURN_TYPE_DISTANCE
       return distance_0 - 1
-    when 2
+    when CELLULAR_RETURN_TYPE_DISTANCE_2
       return distance_1 - 1
-    when 3
+    when CELLULAR_RETURN_TYPE_DISTANCE_2_ADD
       return (distance_1 + distance_0) * 0.5 - 1
-    when 4
+    when CELLULAR_RETURN_TYPE_DISTANCE_2_SUB
       return distance_1 - distance_0 - 1
-    when 5
+    when CELLULAR_RETURN_TYPE_DISTANCE_2_MUL
       return distance_1 * distance_0 * 0.5 - 1
-    when 6
+    when CELLULAR_RETURN_TYPE_DISTANCE_2_DIV
       return distance_0 / distance_1 - 1
     else
       return 0

@@ -13,6 +13,11 @@ If you want to report bugs, have improvements or want in generally talk about th
 ![Screenshot Cellular 1](screenshots/sc_cellular_1.png)
 ![Screenshot Cellular 0](screenshots/sc_cellular_0.png)
 
+## Projects
+[tiled render](https://github.com/owenbutler/tiled-render) by Owen Butler
+
+![Tile Example](screenshots/tile_example.gif)
+
 # Performance
 While trying to keep things fast, performance isn't the main goal of this project but the ease of use.
 If you need some faster noise (and by faster I mean light speed like 🙃), I can totally recommend [Fast Noise Lite](https://github.com/Auburn/FastNoiseLite). (Keep in mind that *Fast Noise Lite* needs you to compile C/C++ code)

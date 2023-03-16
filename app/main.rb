@@ -6,7 +6,6 @@ SIZE = 200
 SEED = 0
 SCALE = 0.07
 OFFSET = -SIZE / 2
-OCTAVES = 4
 
 def generate_noise args
   args.pixel_array(:noise).width = SIZE
@@ -23,14 +22,24 @@ def generate_noise args
       case args.state.noise_mode
         # simple grayscale fbm noise
       when 0
+        noise.octaves = 4
         n = noise.get_fbm((x + OFFSET) * SCALE, (y + OFFSET) * SCALE)
         n = ((n + 1) * 127).floor
         args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n + (n << 8) + (n << 16)
 
-        args.state.description = "value noise"
+        args.state.description = "value noise\noctaves: 4"
+
+      when 1
+        noise.octaves = 2
+        n = noise.get_fbm((x + OFFSET) * SCALE, (y + OFFSET) * SCALE)
+        n = ((n + 1) * 127).floor
+        args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n + (n << 8) + (n << 16)
+
+        args.state.description = "value noise\noctaves: 2"
 
         # fbm noise seperated into three colors
-      when 1
+      when 2
+        noise.octaves = 4
         n = noise.get_fbm((x + OFFSET) * SCALE, (y + OFFSET) * SCALE)
         n = ((n + 1) * 127).floor
         # #29adff Cyan
@@ -51,21 +60,21 @@ def generate_noise args
         end
         args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + r + (g << 8) + (b << 16)
 
-        args.state.description = "value noise"
+        args.state.description = "value noise\noctaves: 4"
 
         # cellular cell value as rgb color
-      when 2
+      when 3
         noise.distance_function = Noise::CELLULAR_DISTANCE_FUNCTION_MANHATTAN
         noise.return_type = Noise::CELLULAR_RETURN_TYPE_CELL_VALUE
         noise.cellular_jitter = 1.0
         n = noise.get_cellular((x + OFFSET) * SCALE, (y + OFFSET) * SCALE)
-        n = (n + 4) / 8 * 255 * 255 * 255
+        n = (n * 10000000) % 16581375 # 255**3
         args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n.floor
 
         args.state.description = "cellular noise\ndistance: manhattan\nreturn type: distance\njitter: 1.0"
 
         # cellular distance, similar to water
-      when 3
+      when 4
         noise.distance_function = Noise::CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN
         noise.return_type = Noise::CELLULAR_RETURN_TYPE_DISTANCE
         noise.cellular_jitter = 1.0
@@ -80,7 +89,7 @@ def generate_noise args
         args.state.description = "cellular noise\ndistance: euclidean\nreturn type: distance\njitter: 1.0"
 
         # cellular distance, similar to water but with lower jitter
-      when 4
+      when 5
         noise.distance_function = Noise::CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN
         noise.return_type = Noise::CELLULAR_RETURN_TYPE_DISTANCE
         noise.cellular_jitter = 0.3
@@ -95,7 +104,7 @@ def generate_noise args
         args.state.description = "cellular noise\ndistance: euclidean\nreturn type: distance\njitter: 0.3"
 
         # grayscale cellular distance 2
-      when 5
+      when 6
         noise.distance_function = Noise::CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN
         noise.return_type = Noise::CELLULAR_RETURN_TYPE_DISTANCE_2
         noise.cellular_jitter = 0.8
@@ -123,7 +132,7 @@ def tick args
   args.state.noise_mode ||= args.state.last_noise_mode
 
   args.state.noise_mode += 1 if args.inputs.keyboard.key_down.space
-  args.state.noise_mode = 0 if args.state.noise_mode > 5
+  args.state.noise_mode = 0 if args.state.noise_mode > 6
 
   generate_noise(args) if args.state.tick_count.zero? || args.state.noise_mode != args.state.last_noise_mode
 
@@ -137,9 +146,9 @@ def tick args
     path: :noise
   }
 
-  args.outputs.labels << [0, HEIGHT, "PRESS SPACE TO CHANGE NOISE", 1, 0, 255, 0, 0]
+  args.outputs.labels << [0, HEIGHT, "PRESS SPACE TO CHANGE NOISE", 1, 0, 0xFF, 0x00, 0x4D]
   labels = args.state.description.split("\n")
   labels.each_with_index do |l, i|
-    args.outputs.labels << [0, HEIGHT - 30 - i * 30, l, 1, 0, 255, 0, 0]
+    args.outputs.labels << [0, HEIGHT - 30 - i * 30, l, 1, 0, 0xFF, 0xA3, 0x00]
   end
 end

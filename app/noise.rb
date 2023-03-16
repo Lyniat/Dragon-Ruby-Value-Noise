@@ -2,6 +2,8 @@
 
 class Noise
 
+  attr_accessor :seed, :octaves, :distance_function, :return_type, :cellular_jitter
+
   CELLULAR_RETURN_TYPE_CELL_VALUE = 0
   CELLULAR_RETURN_TYPE_DISTANCE = 1
   CELLULAR_RETURN_TYPE_DISTANCE_2 = 2
@@ -9,6 +11,11 @@ class Noise
   CELLULAR_RETURN_TYPE_DISTANCE_2_SUB = 4
   CELLULAR_RETURN_TYPE_DISTANCE_2_MUL = 5
   CELLULAR_RETURN_TYPE_DISTANCE_2_DIV = 6
+
+  CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN = 0
+  CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN_SQ = 1
+  CELLULAR_DISTANCE_FUNCTION_MANHATTAN = 2
+  CELLULAR_DISTANCE_FUNCTION_HYBRID = 3
 
   SIN = 0.479425538604203
   COS = 0.877582561890372
@@ -87,9 +94,12 @@ class Noise
     0.01426758847, -0.9998982128, -0.6734383991, 0.7392433447, 0.639412098, -0.7688642071, 0.9211571421, 0.3891908523, -0.146637214, -0.9891903394, -0.782318098, 0.6228791163, -0.5039610839, -0.8637263605, -0.7743120191, -0.6328039957,
   ]
 
-  def initialize(seed = 1337, octaves = 3)
+  def initialize(seed = 1337)
     @seed = seed
-    @octaves = octaves
+    @octaves = 4
+    @return_type = CELLULAR_RETURN_TYPE_CELL_VALUE
+    @distance_function = CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN
+    @cellular_jitter = 1.0
   end
 
   # deprecated
@@ -152,14 +162,6 @@ class Noise
 
   # Cellular stuff
 
-  def cellular_hash(seed, x_primed, y_primed)
-    # let hash = Math.trunc(seed ^ xPrimed ^ yPrimed);
-    # hash = (hash * 0x27d4eb2d) >>> 0;
-    # return hash;
-    h = (seed ^ x_primed ^ y_primed).to_i
-    return h
-  end
-
   # see https://raw.githubusercontent.com/Auburn/FastNoiseLite/master/JavaScript/FastNoiseLite.js (lines 1681..1807) for this port
   # MIT License
 
@@ -184,7 +186,11 @@ class Noise
   # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   # SOFTWARE.
 
-  def get_cellular(pos_x, pos_y, return_type = 0)
+  def cellular_hash(seed, x_primed, y_primed)
+    (seed ^ x_primed ^ y_primed).to_i
+  end
+
+  def get_cellular(pos_x, pos_y)
     xr = pos_x.round
     yr = pos_y.round
 
@@ -193,7 +199,7 @@ class Noise
 
     closest_hash = 0
 
-    cellular_jitter = 0.43701595 # TODO: * this._CellularJitterModifier;
+    cellular_jitter = 0.43701595 * @cellular_jitter
 
     x_primed = (xr - 1) * PRIME_X
     y_primed_base = (yr - 1) * PRIME_Y
@@ -211,7 +217,16 @@ class Noise
         vec_x = xi - pos_x + RAND_VECS_2D[idx] * cellular_jitter
         vec_y = yi - pos_y + RAND_VECS_2D[idx | 1] * cellular_jitter
 
-        new_distance = vec_x * vec_x + vec_y * vec_y
+        case @distance_function
+        when CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN || CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN_SQ
+          new_distance = vec_x * vec_x + vec_y * vec_y
+        when CELLULAR_DISTANCE_FUNCTION_MANHATTAN
+          new_distance = vec_x.abs + vec_y.abs
+        when CELLULAR_DISTANCE_FUNCTION_HYBRID
+          new_distance = vec_x * vec_x + vec_y * vec_y + vec_x.abs + vec_y.abs
+        else
+          new_distance = 0
+        end
 
         distance_1 = [[distance_1, new_distance].min, distance_0].max
 
@@ -230,9 +245,14 @@ class Noise
       xi += 1
     end
 
-    distance_0 = Math.sqrt(distance_0)
+    if @distance_function == CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN && @return_type != CELLULAR_RETURN_TYPE_CELL_VALUE
+      distance_0 = Math.sqrt(distance_0)
+      if @return_type != CELLULAR_RETURN_TYPE_CELL_VALUE
+        distance_1 = Math.sqrt(distance_1)
+      end
+    end
 
-    case return_type
+    case @return_type
     when CELLULAR_RETURN_TYPE_CELL_VALUE
       return closest_hash * (1 / 2147483648.0)
     when CELLULAR_RETURN_TYPE_DISTANCE

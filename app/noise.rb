@@ -2,7 +2,9 @@
 
 class Noise
 
-  attr_accessor :seed, :octaves, :distance_function, :return_type, :cellular_jitter
+  attr_accessor :seed, :octaves, :distance_function, :return_type,
+                :cellular_jitter, :fractal_bounding, :weighted_strength,
+                :lacunarity, :gain
 
   CELLULAR_RETURN_TYPE_CELL_VALUE = 0
   CELLULAR_RETURN_TYPE_DISTANCE = 1
@@ -100,6 +102,10 @@ class Noise
     @return_type = CELLULAR_RETURN_TYPE_CELL_VALUE
     @distance_function = CELLULAR_DISTANCE_FUNCTION_EUCLIDEAN
     @cellular_jitter = 1.0
+    @fractal_bounding = 1 / 1.75
+    @weighted_strength = 0.0
+    @lacunarity = 2.0
+    @gain = 0.5
   end
 
   # deprecated
@@ -270,5 +276,28 @@ class Noise
     else
       return 0
     end
+  end
+
+  def get_fractal_ridged(pos_x, pos_y)
+    sum = 0
+    amp = @fractal_bounding #TODO: calculate this
+
+    old_seed = @seed
+
+    i = 0
+    while i < @octaves
+      @seed += 1
+      noise = (get_fbm(pos_x, pos_y)).abs
+      sum += (noise * -2 + 1) * amp
+      amp *= mix(1.0, 1 - noise, @weighted_strength)
+
+      pos_x *= @lacunarity
+      pos_y *= @lacunarity
+      amp *= @gain
+
+      i += 1
+    end
+    @seed = old_seed
+    sum
   end
 end

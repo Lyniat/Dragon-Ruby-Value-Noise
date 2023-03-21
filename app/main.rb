@@ -116,6 +116,19 @@ def generate_noise args
         args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + r + (g << 8) + (b << 16)
 
         args.state.description = "cellular noise\ndistance: euclidean\nreturn type: distance 2\njitter: 0.8"
+
+        # grayscale fractal ridged
+      when 7
+        noise.octaves = 2
+        noise.fractal_bounding = 0.8
+        noise.weighted_strength = 0
+        noise.lacunarity = 0.0
+        noise.gain = 0.5
+        n = noise.get_fractal_ridged((x + OFFSET) * SCALE, (y + OFFSET) * SCALE)
+        n = ((n + 1) * 127).floor
+        args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n + (n << 8) + (n << 16)
+
+        args.state.description = "fractal ridged\noctaves: 2\nfractal bounding: 0.8\nlacunarity: 0\ngain: 0.5"
       end
       y += 1
     end
@@ -132,7 +145,7 @@ def tick args
   args.state.noise_mode ||= args.state.last_noise_mode
 
   args.state.noise_mode += 1 if args.inputs.keyboard.key_down.space
-  args.state.noise_mode = 0 if args.state.noise_mode > 6
+  args.state.noise_mode = 0 if args.state.noise_mode > 7
 
   generate_noise(args) if args.state.tick_count.zero? || args.state.noise_mode != args.state.last_noise_mode
 

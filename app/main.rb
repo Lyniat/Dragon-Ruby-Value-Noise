@@ -129,6 +129,49 @@ def generate_noise args
         args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + n + (n << 8) + (n << 16)
 
         args.state.description = "fractal ridged\noctaves: 2\nfractal bounding: 0.8\nlacunarity: 0\ngain: 0.5"
+      when 8
+        noise.octaves = 6
+        noise.fractal_bounding = 0.8
+        noise.weighted_strength = 0
+        noise.lacunarity = 0.0
+        noise.gain = 0.5
+
+        warp_scale = 0.05
+        warp_scale_1 = 40
+
+        _x = 0.1
+        _y = 0.4
+
+        n_x = noise.get_fbm((x) * warp_scale, (y + _y) * warp_scale)
+        n_y = noise.get_fbm((x + _x) * warp_scale, (y) * warp_scale)
+
+        n = noise.get_fractal_ridged(((x + warp_scale_1 * n_x) + OFFSET) * SCALE, ((y + warp_scale_1 * n_y) + OFFSET) * SCALE)
+
+        n_x = (n_x + 1) / 2
+        n_y = (n_y + 1) / 2
+        n = (n + 1) / 2
+
+        c = {r: n * n,
+          g: 0,
+          b: n_y}
+
+        c_2 = {r: 0,
+               g: 0,
+               b: n_x * n_x}
+
+        a = n_x * n_y
+
+        r = c.r * (1 - a) + c_2.r * a
+        g = 0
+        b = c.b * (1 - a) + c_2.b * a
+
+        r = (r * 255).to_i
+        g = (g * 255).to_i
+        b = (b * 255).to_i
+
+        args.pixel_array(:noise).pixels[y * SIZE + x] = 0xFF000000 + r + (g << 8) + (b << 16)
+
+        args.state.description = "domain warping\nsee code for details"
       end
       y += 1
     end
@@ -145,7 +188,7 @@ def tick args
   args.state.noise_mode ||= args.state.last_noise_mode
 
   args.state.noise_mode += 1 if args.inputs.keyboard.key_down.space
-  args.state.noise_mode = 0 if args.state.noise_mode > 7
+  args.state.noise_mode = 0 if args.state.noise_mode > 8
 
   generate_noise(args) if args.state.tick_count.zero? || args.state.noise_mode != args.state.last_noise_mode
 
